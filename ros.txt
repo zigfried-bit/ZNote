@@ -1,0 +1,13 @@
+message_filters::sync::ApproximateTime
+这是一种使用message_filters::sync::Synchronizer来进行消息(来自不同话题的消息)匹配的策略。
+相比于message_filters::sync::ExactTime策略，这种策略可以匹配 时间戳不同 的消息。
+简单来说，就是时间相差不多，也认为是同步。
+
+举个例子：
+比如，分别订阅了左右目相机的图像话题，想根据左右目图像计算深度图，此时就需要确保收到的图像消息时间同步
+message_filters::Subscriber<sensor_msgs::Image> left_sub(n, "/left_rectified", 1);
+message_filters::Subscriber<sensor_msgs::Image> right_sub(n, "/right_rectified", 1);
+可以使用上面的时间同步策略：
+typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> mySyncPolicy;
+message_filters::Synchronizer<mySyncPolicy> sync(mySyncPolicy(10), left_sub, right_sub);
+sync.registerCallback(boost::bind(&callback, _1, _2));
